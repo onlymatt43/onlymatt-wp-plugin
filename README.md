@@ -5,6 +5,8 @@ A comprehensive WordPress plugin that integrates the ONLYMATT AI assistant syste
 ## Features
 
 - 🤖 **AI Chat Widget**: Interactive chat widget for your website visitors
+- 🌐 **Web Builder AI**: Generate complete websites using AI analysis and research
+- 👋 **HEY HI AI Guide**: Interactive floating sphere that guides users through your website
 - 🧠 **Memory Management**: Persistent AI memory across sessions
 - 📋 **Task Management**: Create and track AI-assisted tasks
 - 📊 **Reports & Analytics**: Generate usage and performance reports
@@ -54,11 +56,44 @@ Add these shortcodes to your pages or posts:
 ```
 Displays an interactive chat widget where visitors can talk to the AI assistant.
 
+#### HEY HI AI Guide
+```
+[onlymatt_hey_hi]
+```
+Adds an interactive floating sphere that serves as an intelligent AI-powered guide for your website visitors.
+
 #### Admin Panel (Admin Only)
 ```
 [onlymatt_admin]
 ```
 Displays a simplified admin panel for managing the AI system (requires admin privileges).
+
+### HEY HI AI Guide
+
+The HEY HI feature adds an interactive floating sphere to your website that serves as an intelligent AI-powered guide. The sphere:
+
+- **Floats on the page** with smooth animations
+- **Responds to user interactions** with contextual help
+- **Has deep knowledge** of your website structure and content
+- **Provides quick actions** for common tasks
+- **Offers personalized assistance** based on user behavior
+
+#### AI Personas
+
+The HEY HI system uses specialized AI personas:
+
+- **site_guide**: Knows your website structure, pages, and content
+- **web_developer**: Provides technical assistance and code help
+- **general_assistant**: Handles general inquiries and support
+
+#### Site Knowledge
+
+The AI automatically collects and maintains knowledge about:
+
+- Website structure and navigation
+- Page content and purposes
+- User interaction patterns
+- Common questions and solutions
 
 ### Admin Dashboard
 
@@ -91,7 +126,8 @@ onlymatt-wp-plugin/
     ├── admin-tasks.php         # Task management
     ├── admin-settings.php      # Settings page
     ├── frontend-chat.php       # Frontend chat widget
-    └── frontend-admin.php      # Frontend admin panel
+    ├── frontend-admin.php      # Frontend admin panel
+    └── hey-hi-sphere.php       # HEY HI interactive sphere
 ```
 
 ## API Integration
@@ -169,6 +205,12 @@ For support and questions:
 This plugin is licensed under the GPL v2 or later.
 
 ## Changelog
+
+### Version 1.1.0
+- Added HEY HI AI Guide feature with interactive floating sphere
+- Implemented site knowledge collection system
+- Added specialized AI personas for site guidance
+- Enhanced AI contextual awareness
 
 ### Version 1.0.0
 - Initial release
