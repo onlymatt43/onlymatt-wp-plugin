@@ -42,6 +42,7 @@ class OnlyMatt_AI_Plugin {
         // Shortcodes
         add_shortcode('onlymatt_chat', array($this, 'chat_shortcode'));
         add_shortcode('onlymatt_admin', array($this, 'admin_shortcode'));
+        add_shortcode('onlymatt_hey_hi', array($this, 'hey_hi_shortcode'));
         add_shortcode('onlymatt_web_builder', array($this, 'web_builder_shortcode'));
 
         // REST API
@@ -179,64 +180,134 @@ class OnlyMatt_AI_Plugin {
         return ob_get_clean();
     }
 
-    public function web_builder_shortcode($atts) {
+    public function admin_shortcode($atts) {
+        if (!current_user_can('manage_options')) {
+            return '<p>Accès non autorisé.</p>';
+        }
+
+        // Ensure frontend scripts are loaded for admin shortcode
+        if (!wp_script_is('onlymatt-frontend-js', 'enqueued')) {
+            wp_enqueue_script('onlymatt-frontend-js');
+            wp_enqueue_style('onlymatt-frontend-css');
+            wp_localize_script('onlymatt-frontend-js', 'onlymatt_ajax', array(
+                'ajax_url' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('onlymatt_nonce'),
+                'api_base' => get_option('onlymatt_api_base', 'https://your-app.onrender.com'),
+                'admin_key' => get_option('onlymatt_admin_key', 'test_key')
+            ));
+        }
+
+        ob_start();
+        include ONLYMATT_AI_PLUGIN_DIR . 'templates/frontend-admin.php';
+        return ob_get_clean();
+    }
+
+    public function hey_hi_shortcode($atts) {
         if (!wp_script_is('jquery', 'enqueued')) {
             wp_enqueue_script('jquery');
         }
 
         wp_localize_script('jquery', 'onlymatt_ajax', array(
             'ajax_url' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('onlymatt_nonce')
+            'nonce' => wp_create_nonce('onlymatt_nonce'),
+            'site_info' => $this->get_site_knowledge()
         ));
+
+        ob_start();
+        include ONLYMATT_AI_PLUGIN_DIR . 'templates/hey-hi-sphere.php';
+        return ob_get_clean();
+    }
+
+    public function web_builder_shortcode($atts) {
+        // Ensure frontend scripts are loaded
+        if (!wp_script_is('onlymatt-frontend-js', 'enqueued')) {
+            wp_enqueue_script('onlymatt-frontend-js');
+            wp_enqueue_style('onlymatt-frontend-css');
+            wp_localize_script('onlymatt-frontend-js', 'onlymatt_ajax', array(
+                'ajax_url' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('onlymatt_nonce'),
+                'api_base' => get_option('onlymatt_api_base', 'https://your-app.onrender.com'),
+                'admin_key' => get_option('onlymatt_admin_key', 'test_key')
+            ));
+        }
 
         ob_start();
         include ONLYMATT_AI_PLUGIN_DIR . 'templates/web-builder.php';
         return ob_get_clean();
     }
 
-        // AJAX handlers
+    public function get_site_knowledge() {
+        // Collect comprehensive site information
+        $site_info = array(
+            'site_title' => get_bloginfo('name'),
+            'site_description' => get_bloginfo('description'),
+            'site_url' => get_site_url(),
+            'current_page' => array(
+                'title' => get_the_title(),
+                'url' => get_permalink(),
+                'type' => get_post_type()
+            ),
+            'main_pages' => array(),
+            'menu_structure' => array()
+        );
+
+        // Get main pages
+        $main_pages = get_pages(array(
+            'sort_column' => 'menu_order',
+            'sort_order' => 'asc',
+            'parent' => 0
+        ));
+
+        foreach ($main_pages as $page) {
+            $site_info['main_pages'][] = array(
+                'title' => $page->post_title,
+                'url' => get_permalink($page->ID),
+                'excerpt' => wp_trim_words($page->post_excerpt ?: $page->post_content, 20)
+            );
+        }
+
+        // Get menu structure
+        $menus = wp_get_nav_menus();
+        foreach ($menus as $menu) {
+            $menu_items = wp_get_nav_menu_items($menu->term_id);
+            $site_info['menu_structure'][$menu->name] = array();
+
+            foreach ($menu_items as $item) {
+                $site_info['menu_structure'][$menu->name][] = array(
+                    'title' => $item->title,
+                    'url' => $item->url,
+                    'description' => $item->description
+                );
+            }
+        }
+
+        return $site_info;
+    }
+
+    // AJAX handlers
     public function handle_chat_ajax() {
         check_ajax_referer('onlymatt_nonce', 'nonce');
 
         $message = sanitize_text_field($_POST['message']);
-        $persona = sanitize_text_field($_POST['persona'] ?? get_option('onlymatt_default_persona', 'general_assistant'));
-        $api_base = get_option('onlymatt_api_base', 'https://onlymatt-gateway.onrender.com');
-
-        // Get persona configuration
-        $personas = get_option('onlymatt_ai_personas', array());
-        $system_prompt = isset($personas[$persona]['system_prompt']) ? $personas[$persona]['system_prompt'] : '';
-
-        // Build messages array with system prompt if available
-        $messages = array();
-        if (!empty($system_prompt)) {
-            $messages[] = array('role' => 'system', 'content' => $system_prompt);
-        }
-        $messages[] = array('role' => 'user', 'content' => $message);
+        $api_base = get_option('onlymatt_api_base', 'https://your-app.onrender.com');
 
         $response = wp_remote_post($api_base . '/ai/chat', array(
             'body' => json_encode(array(
-                'messages' => $messages,
-                'model' => 'llama-3.3-70b-versatile',
+                'prompt' => $message,
+                'model' => 'mistral',
                 'temperature' => 0.7
             )),
             'headers' => array(
                 'Content-Type' => 'application/json',
             ),
-            'timeout' => 60 // Increased timeout for complex tasks
+            'timeout' => 30
         ));
 
         if (is_wp_error($response)) {
-            wp_send_json_error('Erreur de connexion à l\'API');
+            wp_send_json_error('Erreur de connexion');
         } else {
             $body = wp_remote_retrieve_body($response);
             $data = json_decode($body, true);
-
-            // Add persona info to response
-            if ($data && isset($data['response'])) {
-                $data['persona'] = $persona;
-                $data['persona_name'] = $personas[$persona]['name'] ?? $persona;
-            }
-
             wp_send_json_success($data);
         }
     }
@@ -367,7 +438,7 @@ class OnlyMatt_AI_Plugin {
         $api_base = get_option('onlymatt_api_base', 'https://your-app.onrender.com');
 
         $response = wp_remote_post($api_base . '/ai/chat', array(
-            'body' => json_encode(array('messages' => array(array('role' => 'user', 'content' => $message)))),
+            'body' => json_encode(array('prompt' => $message)),
             'headers' => array('Content-Type' => 'application/json'),
             'timeout' => 30
         ));
@@ -422,55 +493,9 @@ new OnlyMatt_AI_Plugin();
 // Activation hook
 register_activation_hook(__FILE__, 'onlymatt_ai_activate');
 function onlymatt_ai_activate() {
-        // Set default options
-    add_option('onlymatt_api_base', 'https://onlymatt-gateway.onrender.com');
-    add_option('onlymatt_admin_key', '64b29ac4e96c12e23c1a58f93ad1509e');
-
-    // Set default AI personas
-    add_option('onlymatt_ai_personas', array(
-        'web_developer' => array(
-            'name' => 'Web Developer',
-            'description' => 'Spécialisé dans la création de sites web',
-            'system_prompt' => 'Tu es un développeur web expert. Ta mission principale est de construire des sites web complets en analysant les données fournies par l\'utilisateur, en consultant des sites web pour t\'informer et en ajustant le design selon les meilleures pratiques.
-
-RÈGLES IMPORTANTES :
-1. ANALYSE : Commence toujours par analyser les données fournies (contenu, structure, exigences)
-2. RECHERCHE : Consulte des sites web similaires pour t\'inspirer du design et des fonctionnalités
-3. DESIGN : Adapte le look selon les tendances actuelles et les besoins spécifiques
-4. CODE : Génère du code HTML/CSS/JS propre, responsive et optimisé
-5. STRUCTURE : Organise le contenu de manière logique et user-friendly
-
-POUR CHAQUE PROJET :
-- Analyse les données et exigences
-- Recherche des références visuelles
-- Propose une structure de site
-- Génère le code complet avec commentaires
-- Explique tes choix de design
-
-UTILISE TOUJOURS :
-- HTML5 sémantique
-- CSS3 moderne avec Flexbox/Grid
-- JavaScript vanilla (pas de frameworks lourds)
-- Design responsive mobile-first
-- Accessibilité WCAG
-- Performance optimisée
-
-FORMAT DE RÉPONSE :
-1. 📊 ANALYSE DES DONNÉES
-2. 🔍 RECHERCHE ET INSPIRATION
-3. 🎨 CONCEPT ET STRUCTURE
-4. 💻 CODE GÉNÉRÉ
-5. 📝 EXPLICATIONS ET RECOMMANDATIONS'
-        ),
-        'general_assistant' => array(
-            'name' => 'Assistant Général',
-            'description' => 'Assistant IA polyvalent',
-            'system_prompt' => 'Tu es un assistant IA helpful et polyvalent. Tu aides les utilisateurs avec diverses tâches de manière professionnelle et efficace.'
-        )
-    ));
-
-    // Set default persona
-    add_option('onlymatt_default_persona', 'web_developer');
+    // Set default options
+    add_option('onlymatt_api_base', 'https://your-app.onrender.com');
+    add_option('onlymatt_admin_key', 'test_key');
 
     // Create necessary directories
     $dirs = array(
