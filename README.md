@@ -1,9 +1,5 @@
 # ONLYMATT AI WordPress Plugin
 
-[![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://www.gnu.org/licenses/gpl-2.0)
-[![WordPress Plugin](https://img.shields.io/badge/WordPress-Plugin-blue)](https://wordpress.org/plugins/)
-[![PHP Version](https://img.shields.io/badge/PHP-7.4+-blue)](https://php.net/)
-
 A comprehensive WordPress plugin that integrates the ONLYMATT AI assistant system into your WordPress website.
 
 ## Features
@@ -16,24 +12,6 @@ A comprehensive WordPress plugin that integrates the ONLYMATT AI assistant syste
 - 🎨 **Responsive Design**: Mobile-friendly interface with Bootstrap styling
 
 ## Installation
-
-### From GitHub (Recommended)
-
-1. **Clone or download** this repository:
-   ```bash
-   git clone https://github.com/onlymatt43/onlymatt-wp-plugin.git
-   ```
-
-2. **Upload to WordPress**:
-   - Copy the `onlymatt-wp-plugin` folder to `wp-content/plugins/`
-   - Or create a ZIP file and upload via WordPress admin
-
-3. **Activate the plugin** through the WordPress admin dashboard:
-   - Go to Plugins → Installed Plugins
-   - Find "ONLYMATT AI Assistant"
-   - Click "Activate"
-
-### Manual Installation
 
 1. **Download the plugin files** to your WordPress plugins directory:
    ```
@@ -162,22 +140,6 @@ Enable debug logging in the plugin settings to get detailed error information in
 - PHP 7.4+
 - ONLYMATT AI Gateway (FastAPI application)
 
-### Getting Started
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/onlymatt43/onlymatt-wp-plugin.git
-   cd onlymatt-wp-plugin
-   ```
-
-2. Install development dependencies (if any)
-
-3. Make your changes
-
-4. Test on a WordPress development environment
-
-5. Submit a pull request
-
 ### Customization
 
 The plugin is designed to be extensible. Key areas for customization:
@@ -195,25 +157,12 @@ The plugin provides several WordPress hooks for customization:
 - `onlymatt_after_chat` - After receiving chat response
 - `onlymatt_api_response` - Filter API responses
 
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
-
-### Development Guidelines
-
-1. Follow WordPress coding standards
-2. Use meaningful commit messages
-3. Test changes thoroughly
-4. Update documentation as needed
-5. Ensure backward compatibility
-
 ## Support
 
 For support and questions:
 - Check the WordPress admin error logs
 - Review browser console for JavaScript errors
 - Ensure your ONLYMATT AI Gateway is properly configured
-- [Open an issue](https://github.com/onlymatt43/onlymatt-wp-plugin/issues) on GitHub
 
 ## License
 
