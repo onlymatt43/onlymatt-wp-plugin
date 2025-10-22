@@ -334,8 +334,13 @@
 <div class="onlymatt-chat-container">
     <div class="onlymatt-chat-inline">
         <div class="onlymatt-chat-header">
-            <span>ONLYMATT AI Assistant</span>
-            <span style="font-size: 12px; opacity: 0.8;">Online</span>
+            <span>🤖 ONLYMATT AI Assistant</span>
+            <div class="onlymatt-persona-selector">
+                <select id="onlymatt-persona-select" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 4px 8px; font-size: 12px;">
+                    <option value="web_developer">🌐 Web Developer</option>
+                    <option value="general_assistant">💬 General Assistant</option>
+                </select>
+            </div>
         </div>
         <div class="onlymatt-chat-messages" id="onlymatt-frontend-messages">
             <div class="onlymatt-message assistant">
@@ -422,6 +427,7 @@ jQuery(document).ready(function($) {
     // Enhanced send message function
     function sendMessage() {
         const message = $input.val().trim();
+        const persona = $('#onlymatt-persona-select').val();
         if (!message) return;
 
         // Disable input while sending
@@ -439,6 +445,7 @@ jQuery(document).ready(function($) {
         $.post(onlymatt_ajax.ajax_url, {
             action: 'onlymatt_chat',
             message: message,
+            persona: persona,
             nonce: onlymatt_ajax.nonce
         })
         .done(function(response) {
