@@ -33,7 +33,8 @@ class OnlyMatt_AI_Plugin {
         add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_scripts'));
 
         // AJAX handlers
-        add_action('wp_ajax_onlymatt_chat', array($this, 'handle_chat_ajax'));
+    add_action('wp_ajax_onlymatt_chat', array($this, 'handle_chat_ajax'));
+    add_action('wp_ajax_nopriv_onlymatt_chat', array($this, 'handle_chat_ajax'));
         add_action('wp_ajax_onlymatt_save_memory', array($this, 'handle_save_memory_ajax'));
         add_action('wp_ajax_onlymatt_get_tasks', array($this, 'handle_get_tasks_ajax'));
         add_action('wp_ajax_onlymatt_create_task', array($this, 'handle_create_task_ajax'));
@@ -337,19 +338,46 @@ class OnlyMatt_AI_Plugin {
         ));
 
         if (is_wp_error($response)) {
-            wp_send_json_error('Erreur de connexion à l\'API');
-        } else {
-            $body = wp_remote_retrieve_body($response);
-            $data = json_decode($body, true);
-
-            // Add persona info to response
-            if ($data && isset($data['response'])) {
-                $data['persona'] = $persona;
-                $data['persona_name'] = $personas[$persona]['name'] ?? $persona;
-            }
-
-            wp_send_json_success($data);
+            wp_send_json_error(array(
+                'message' => 'Erreur de connexion à l\'API',
+                'detail' => $response->get_error_message(),
+            ));
         }
+
+        $status_code = wp_remote_retrieve_response_code($response);
+        $body = wp_remote_retrieve_body($response);
+        $data = json_decode($body, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            wp_send_json_error(array(
+                'message' => 'Réponse API invalide',
+                'detail' => substr($body, 0, 500),
+            ));
+        }
+
+        // Normalise les réponses OpenAI/Groq si le champ "response" n'est pas fourni
+        if (!isset($data['response'])) {
+            if (isset($data['choices'][0]['message']['content'])) {
+                $data['response'] = $data['choices'][0]['message']['content'];
+            } elseif (isset($data['choices'][0]['text'])) {
+                $data['response'] = $data['choices'][0]['text'];
+            }
+        }
+
+        if (empty($data) || empty($data['response'])) {
+            $error_message = $data['error'] ?? $data['detail'] ?? 'Réponse vide du service AI';
+            wp_send_json_error(array(
+                'message' => $error_message,
+                'status' => $status_code,
+                'raw' => $data,
+            ));
+        }
+
+        // Add persona info to response
+        $data['persona'] = $persona;
+        $data['persona_name'] = $personas[$persona]['name'] ?? $persona;
+
+        wp_send_json_success($data);
     }
 
     public function handle_save_memory_ajax() {

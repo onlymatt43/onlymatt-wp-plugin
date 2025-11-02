@@ -455,13 +455,14 @@ jQuery(document).ready(function($) {
             $sendBtn.html('📤');
 
             if (response.success) {
-                const aiResponse = response.data.response || 'I received your message!';
+                const aiResponse = response.data && response.data.response ? response.data.response : 'I received your message!';
                 // Simulate typing delay for better UX
                 setTimeout(function() {
                     addMessage(aiResponse, 'assistant');
                 }, 500);
             } else {
-                addMessage('❌ Sorry, I encountered an error. Please try again.', 'assistant');
+                const err = response.data && response.data.message ? response.data.message : '❌ Sorry, I encountered an error. Please try again.';
+                addMessage(err, 'assistant');
             }
         })
         .fail(function(xhr, status, error) {

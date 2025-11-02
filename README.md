@@ -2,6 +2,8 @@
 
 A comprehensive WordPress plugin that integrates the ONLYMATT AI assistant system into your WordPress website.
 
+> ℹ️ Cette copie vit directement dans le repo `onlymatt-gateway`. Utilisez `./sync-to-wordpress.sh` pour la déployer vers votre installation WordPress locale ou distante afin de garantir qu'une seule version du plugin est utilisée partout.
+
 ## Features
 
 - 🤖 **AI Chat Widget**: Interactive chat widget for your website visitors
@@ -35,6 +37,8 @@ A comprehensive WordPress plugin that integrates the ONLYMATT AI assistant syste
 
 - **API Gateway URL**: The URL of your ONLYMATT AI Gateway (e.g., `https://your-app.onrender.com`)
 - **Admin API Key**: Your API key for admin operations
+
+> Utilisateurs om43.com : exécutez `./configure-om43.sh` (avec le chemin de WordPress en argument si nécessaire) pour pousser automatiquement `https://api.om43.com` et votre clé admin dans les options du site via WP-CLI.
 
 ### Optional Settings
 

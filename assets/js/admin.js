@@ -77,11 +77,11 @@ jQuery(document).ready(function($) {
             this.showTyping();
 
             this.callAPI('/ai/chat', { messages: [{role: 'user', content: message}], model: 'llama-3.3-70b-versatile', temperature: 0.7 })
-                .done((response) => {
+                .then((response) => {
                     this.hideTyping();
                     this.addChatMessage(response.response, 'assistant');
                 })
-                .fail(() => {
+                .catch(() => {
                     this.hideTyping();
                     this.addChatMessage('Error: Could not get response from AI.', 'assistant');
                 });
@@ -114,18 +114,18 @@ jQuery(document).ready(function($) {
             }
 
             this.callAPI('/ai/memory/remember', { user_id: 'admin', persona: 'wp_admin', key, value })
-                .done(() => {
+                .then(() => {
                     $('#onlymatt-memory-key, #onlymatt-memory-value').val('');
                     this.loadMemory();
                 })
-                .fail(() => {
+                .catch(() => {
                     alert('Error adding memory.');
                 });
         },
 
         loadMemory: function() {
             this.callAPI('/ai/memory/recall?user_id=admin&persona=wp_admin', {})
-                .done((response) => {
+                .then((response) => {
                     const memoryList = $('#onlymatt-memory-list');
                     memoryList.empty();
 
@@ -144,6 +144,10 @@ jQuery(document).ready(function($) {
                     } else {
                         memoryList.html('<tr><td colspan="3">No memory items stored.</td></tr>');
                     }
+                })
+                .catch(() => {
+                    const memoryList = $('#onlymatt-memory-list');
+                    memoryList.html('<tr><td colspan="3">Error loading memory.</td></tr>');
                 });
         },
 
@@ -442,10 +446,10 @@ jQuery(document).ready(function($) {
             action: 'delete',
             id: reportId
         })
-        .done(() => {
+        .then(() => {
             OnlyMattAdmin.loadReports();
         })
-        .fail(() => {
+        .catch(() => {
             alert('Error deleting report.');
         });
     });
